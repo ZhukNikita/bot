@@ -1,4 +1,4 @@
-export const MainMenu = {
+const MainMenu = {
     reply_markup: JSON.stringify({
         resize_keyboard: true,
         keyboard: [
@@ -8,7 +8,7 @@ export const MainMenu = {
     })
 };
 
-export const TrueCallerMenu = {
+const TrueCallerMenu = {
     reply_markup: {
         resize_keyboard: true,
         keyboard: [
@@ -17,7 +17,7 @@ export const TrueCallerMenu = {
         ]
     }
 };
-export const CallFilterMenu = {
+const CallFilterMenu = {
     reply_markup: {
         resize_keyboard: true,
         keyboard: [
@@ -26,7 +26,7 @@ export const CallFilterMenu = {
         ]
     }
 };
-export const ValidMenu = {
+const ValidMenu = {
     reply_markup: {
         resize_keyboard: true,
         keyboard: [
@@ -34,7 +34,7 @@ export const ValidMenu = {
         ]
     }
 };
-export const GetContactMenu = {
+const GetContactMenu = {
     reply_markup: {
         resize_keyboard: true,
         keyboard: [
@@ -43,7 +43,7 @@ export const GetContactMenu = {
         ]
     }
 };
-export const SpamMenu = {
+const SpamMenu = {
     reply_markup: {
         resize_keyboard: true,
         keyboard: [
@@ -52,3 +52,4 @@ export const SpamMenu = {
         ]
     }
 };
+module.exports = {SpamMenu,GetContactMenu,MainMenu,ValidMenu,TrueCallerMenu,CallFilterMenu}

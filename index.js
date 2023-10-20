@@ -1,11 +1,14 @@
-import truecallerjs  from "truecallerjs";
-import TelegramBot from 'node-telegram-bot-api'
-import axios from 'axios'
-import {SpamMenu, MainMenu, TrueCallerMenu,ValidMenu,CallFilterMenu} from './Menu.js'
-import { exec } from 'child_process';
+const TelegramBot = require('node-telegram-bot-api')
+const axios = require('axios')
+const {SpamMenu, MainMenu, TrueCallerMenu,ValidMenu,CallFilterMenu, GetContactMenu}  = require( './Menu.js')
+const {exec} = require('child_process');
 let token = '6633592726:AAEdbBPmmxGOdYZ9TIMXAi03Q5hNOteDZ9Q';
 const bot = new TelegramBot(token, {polling: true});
-
+const accountSid = "ACe1deca18a447738f1e7ead38ebbd72f5"
+const authToken = "7244d3785374f0ca5aaeb028caaf3f0b"
+const client = require('twilio')(accountSid, authToken);
+const UripGetContact = require('urip-getcontact');
+//a1i0U--iTy4xRkB-QlxKAXtlO9Mj5TIo6fBWiSCjkUz5tR1q4-_l9Gsxh7-4PoY-
 let userState = {};
 const allowedPasswords = ['password'];
 
@@ -46,12 +49,44 @@ bot.on('message', async (msg) => {
         bot.sendMessage(chatId, 'You choose CallFilter');
         bot.sendMessage(chatId, 'Give me your numbers');
     } else if (text === 'GetContact') {
-        bot.sendMessage(chatId, 'GetContact logic here');
+        userState[chatId].activeCase = 'getContact';
+
+          bot.sendMessage(chatId, 'GetContact logic here');
+        
     } else if (text === 'Previous menu') {
         userState[chatId].activeCase = '';
         bot.sendMessage(chatId, 'Choose "Spam check" or "Valid check"', MainMenu);
     } else {
-        if (userState[chatId].activeCase === 'validNumbers') {
+        if(userState[chatId].activeCase === 'getContact'){
+            let numbers = msg.text
+            let key = '0e67be15baf61560b11c8ea6a6174b244ef87faed0d437cc7d493d77854448c9';
+            let token = 'bJLnFp7be7de1fb754a336bb24576c23c26fa3a38ed133ac0187f3f7ff';
+
+            const getContact = new UripGetContact(token, key);
+
+            const temp = []
+            const arrNumbers = numbers.split('\n');
+            const formattedPhoneNumberList = arrNumbers.map(phoneNumber => {
+                const cleanedPhoneNumber = phoneNumber.replace(/\D/g, '');
+                if (!cleanedPhoneNumber.startsWith('+')) {
+                  return '+' + cleanedPhoneNumber;
+                }
+                return cleanedPhoneNumber;
+              });
+              console.log(formattedPhoneNumberList)
+            for (let i = 0 ; i < formattedPhoneNumberList.length ; i++) {
+                try {
+                    const response = await getContact.checkNumber(formattedPhoneNumberList[i])
+                    temp[i] = `${arrNumbers[i]}: \nTags: ${response.tags.length > 5? response.tags.slice(0,5).join('\n'): response.tags.join('\n')}`
+                    bot.sendMessage(msg.chat.id, `${temp[i]}` , GetContactMenu);
+
+                } catch (error) {
+                    bot.sendMessage(msg.chat.id, `Error occurred: ${arrNumbers[i]}: No result Found` , ValidMenu);
+                  console.error(`Error occurred: ${error}`);
+                }
+                await new Promise(resolve => setTimeout(resolve, 1000));
+              }
+        } else if (userState[chatId].activeCase === 'validNumbers') {
                 let numbers = msg.text
                 const apiKey = "915706c30b468174b2ddf1f8c485fc78";
                 const arrNumbers = numbers.split('\n');
@@ -82,6 +117,7 @@ bot.on('message', async (msg) => {
                             console.error(`Ошибка в выводе команды: ${stderr}`);
                             return;
                           }
+                          console.log(stdout)
                           const jsonData = JSON.parse(stdout);
                           console.log(stdout);
                           if(jsonData.status === 429 ){
@@ -140,7 +176,7 @@ bot.on('message', async (msg) => {
                         bot.sendMessage(msg.chat.id, `${temp[i]}` , CallFilterMenu);
 
                     }
-                    await new Promise(resolve => setTimeout(resolve, 400));
+                    await new Promise(resolve => setTimeout(resolve, 1200));
                 }
         
         
@@ -154,6 +190,26 @@ bot.on('message', async (msg) => {
         }
     }
 });
+// try {
+//     const result = await client.lookups.v2.phoneNumbers('+74993499029').fetch({ type: ['carrier'] });
+//     console.log(result)
+//     if (result.carrier) {
+//       // Номер найден и информация о носителе доступна.
+//       // Можно проводить дополнительную проверку, основанную на данных о носителе.
+//       console.log(`Phone number ${phoneNumber} is not spam. Carrier: ${result.carrier.name}`);
+//       return false;
+//     } else {
+//       console.log(`Phone number ${phoneNumber} is not valid or not found.`);
+//       return false;
+//     }
+
+//   } catch (error) {
+//     console.error(`Error checking phone number: ${error.message}`);
+//     return false;
+//   }
+
+
+
 
 
 74993499029
