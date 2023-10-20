@@ -139,7 +139,9 @@ bot.on('message', async (msg) => {
         }  else if (userState[chatId].activeCase === 'CallFilter') {
             let numbersList = msg.text;
             const numbersInLine = numbersList.replace(/\n/g, ',');
-            const numbers = numbersInLine.split(',');
+            const cleanedNumbers = numbersInLine.replace(/(\d{3}\s)/g, '')
+            const numbers = cleanedNumbers.split(',');
+            console.log(numbers)
             let temp = []
             let word = '<span style="color:#000">'
             try{
