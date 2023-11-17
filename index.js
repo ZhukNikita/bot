@@ -1,6 +1,6 @@
 const TelegramBot = require('node-telegram-bot-api')
 const axios = require('axios')
-const {SpamMenu, MainMenu, TrueCallerMenu,ValidMenu,CallFilterMenu, GetContactMenu}  = require( './Menu.js')
+const {SpamMenu, MainMenu, TrueCallerMenu,ValidMenu,CallFilterMenu, GetContactMenu , SpamCallsMenu}  = require( './Menu.js')
 const {exec} = require('child_process');
 let token = '6633592726:AAEdbBPmmxGOdYZ9TIMXAi03Q5hNOteDZ9Q';
 const bot = new TelegramBot(token, {polling: true});
@@ -47,6 +47,10 @@ bot.on('message', async (msg) => {
     } else if (text === 'CallFilter') {
         userState[chatId].activeCase = 'CallFilter';
         bot.sendMessage(chatId, 'You choose CallFilter');
+        bot.sendMessage(chatId, 'Give me your numbers');
+    } else if (text === 'SpamCalls') {
+        userState[chatId].activeCase = 'SpamCalls';
+        bot.sendMessage(chatId, 'You choose SpamCalls');
         bot.sendMessage(chatId, 'Give me your numbers');
     } else if (text === 'GetContact') {
         userState[chatId].activeCase = 'getContact';
@@ -176,6 +180,53 @@ bot.on('message', async (msg) => {
                             : ""
                         }; Tag : ${Tag}`;
                         bot.sendMessage(msg.chat.id, `${temp[i]}` , CallFilterMenu);
+
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 1200));
+                }
+        
+        
+            }
+            catch(e){
+                console.log(e)
+            }
+        }else if (userState[chatId].activeCase === 'SpamCalls') {
+            let numbersList = msg.text;
+            const numbersInLine = numbersList.replace(/\n/g, ',');
+            const cleanedNumbers = numbersInLine.replace(/(\d{3}\s)/g, '')
+            const numbers = cleanedNumbers.split(',');
+            console.log(numbers)
+            let temp = []
+            let word = '<a href="#ratings">'
+            try{
+                const searchWords = [
+                    'Low', 'Medium', "High"];
+                for(let i = 0 ; i < numbers.length ; i++){
+                    const response = await axios.get(`https://spamcalls.net/en/search?q=${numbers[i]}`)
+                    let foundWord = null;
+                    let foundPosition = response.data.indexOf(word)
+                    const TagWord = '</'
+                    const tagString = response.data.slice(foundPosition + word.length, foundPosition + 131)
+                    const TagWordPosition = tagString.indexOf(TagWord)
+                    const Tags = tagString.slice(0,TagWordPosition).split(',')
+                    const Tag = Tags[Tags.length-1]
+                    for (const word of searchWords) {
+                        const position = response.data.indexOf(word);
+                        if (position !== -1 && (!foundWord || position < foundWord.position)) {
+                            foundWord = { word, position };
+                        }
+                    }
+                    if (foundWord) {
+                        temp[i] =`${numbers[i]}: Feedbacks ${
+                            foundWord.word === "High"?
+                            '\u274C️': 
+                            foundWord.word === "Medium"?
+                            '\u26A0':
+                            foundWord.word === "Low"?
+                            '\u2705'
+                            : ""
+                        }; Spam Risk : ${foundWord.word}`;
+                        bot.sendMessage(msg.chat.id, `${temp[i]}` , SpamCallsMenu);
 
                     }
                     await new Promise(resolve => setTimeout(resolve, 1200));
