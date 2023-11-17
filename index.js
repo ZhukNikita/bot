@@ -260,7 +260,17 @@ bot.on('message', async (msg) => {
 //     console.error(`Error checking phone number: ${error.message}`);
 //     return false;
 //   }
+// const accountSid = 'ACe1deca18a447738f1e7ead38ebbd72f5';
+// const authToken = '2102eb2119d4867a0d3515731ed8e7c1';
 
+// const client = require('twilio')(accountSid, authToken);
+
+// client.lookups.phoneNumbers('+18557477626')
+//   .fetch({ type: ['carrier'] })
+//   .then(phone_number => {
+//     console.log(phone_number.carrier) // All of the carrier info.
+//     console.log(phone_number.carrier.name) // Just the carrier name.
+//   });
 
 
 
